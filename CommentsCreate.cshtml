@@ -1,0 +1,301 @@
+﻿@model Sabio.Web.Models.ViewModels.ItemViewModel<int>
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_LayoutConsumer.cshtml";
+}
+@section styles {
+    <style type="text/css">
+        /* page styles */
+    </style>
+}
+
+<!-- PAGE TITLE -->
+<section class="module bg-black-alfa-50 color-white parallax" style="background-image: url('https://d2lm6fxwu08ot6.cloudfront.net/img-thumbs/960w/KJ9ZK1L8WS.jpg')">
+ <!--  <section class="module-sm bg-white-dark">-->
+        <div class="container">
+
+            <div class="row">
+                <div class="col-sm-12 text-center">
+
+                    <h3 class="montserrat text-uppercase m-b-10">Blog Comment</h3>
+                    <ol class="breadcrumb text-xs">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#">Breadcrumbs</a></li>
+                        <li class="active">Blog Comment</li>
+                    </ol>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+    <!-- END PAGE TITLE -->
+    <!-- PAGE -->
+   <section class="module">
+        <div class="container">
+            <div class="row">
+                <div class="comments-form #" id="add-comment">
+                    <h2 class="title">Add your comment</h2>
+                    <form role="form" id="comment-form">
+
+                        <div class="form-group has-feedback">
+                            <label for="subject4">Blog Post ID</label>
+                            <input type="text" class="form-control" id="BlogPostId" placeholder="" name="BlogPostId" required>
+                        </div>
+
+                        <div class="form-group has-feedback">
+                            <label for="subject4">Parent Comment ID</label>
+                            <input type="text" class="form-control" id="ParentCommentId" placeholder="" name="ParentCommentId">
+                        </div>
+                        <div class="form-group has-feedback">
+                            <label for="subject4">Name</label>
+                            <input type="text" class="form-control" id="Name" placeholder="" name="Name" required>
+                        </div>
+                        <div class="form-group has-feedback">
+                            <label for="message4">Comment</label>
+                            <textarea class="form-control" rows="8" id="Content" placeholder="" name="Content" required></textarea>
+                        </div>
+                        <button type="button" class="btn btn-w-m btn-info" id="submit">Submit</button>
+                        <button type="button" class="btn btn-w-m btn-warning" id="formReset">Reset</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row" id="commentTemplate">
+                <div class="col-lg-12">
+                    <br />
+                    <br />
+                    <h2>Comments:</h2>
+                    <div class="media-body">
+                        <h6 id="commentBlogPostId"><!--123--></h6>
+                        <br />
+                        <h5 id="commentId"><!--456--></h5>
+                        <br />
+                        <h3 class="media-heading" id="commentName"><!--Andrew Williams--></h3>
+                    </div>
+                    <p id="commentContent">
+                        <!-- Many desktop publishing packages and web page editors now use Lorem Ipsum as their
+                         default model text, and a search for 'lorem ipsum' will uncover many web sites still
+                         default model text.-->
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    @section scripts {
+        <script type="text/javascript" src="/Scripts/sabio/services/sabio.services.blogComments.js"></script>
+        <script>
+        @{
+            if (Model != null)
+            {
+                <text>sabio.page.item = @Model.Item;</text>
+            }
+         }
+        </script>
+
+        <script type="text/javascript">
+
+            sabio.page.capturedData = null;
+
+            sabio.page.startUp = function () {
+
+                sabio.page.initializeValidation();
+
+                if(sabio.page.item !=null){
+                    sabio.page.handlers.formPopulate();
+                };
+
+                $('#submit').on("click", sabio.page.handlers.onSampleFormSubmit);
+
+                if(sabio.page.item != null){
+                    $("#formReset").on("click", sabio.page.handlers.fillForm);
+                    //    $('#formReset').on("click", sabio.page.handlers.formPopulate);
+                }else{
+                    $('#formReset').on("click", sabio.page.handlers.resetForm);
+                }
+            }
+
+
+            sabio.page.initializeValidation = function () {
+
+                jQuery.validator.setDefaults({
+                    debug: true
+                });
+
+                $('#comment-form').validate({
+                    rules: {
+                        "BlogPostId": {
+                            required: true
+                        },
+                        //"ParentCommentId": {
+                        //    required: true
+                        //},
+                        "Name": {
+                            required: true,
+                            maxlength: 50
+                        },
+                        "Content": {
+                            required: true,
+                            maxlength: 4000
+                        }
+                    },
+
+                    messages: {
+                        "BlogPostId": {
+                            required: "Blog post ID is required.",
+                        },
+                        //"ParentCommentId": {
+                        //    required: "ID is required.",
+                        //},
+                        "Name": {
+                            required: "Name is required.",
+                            maxlength: "Maximum length is 50 characters."
+                        },
+                        "Content": {
+                            required: "Content is required.",
+                            maxlength: "Maximum length is 4000 characters."
+                        }
+                    }
+                });
+            }
+
+            sabio.page.handlers.onSampleFormSubmit = function (event) {
+                event.preventDefault();
+
+                if ($('#comment-form').valid()) {
+
+                    var BlogPostId = $('#BlogPostId').val();
+                    var ParentCommentId = $('#ParentCommentId').val();
+                    var Name = $('#Name').val();
+                    var Content = $('#Content').val();
+
+                    var commentData = {
+                        Id: sabio.page.item,
+                        BlogPostId: BlogPostId,
+                        ParentCommentId: ParentCommentId,
+                        Name: Name,
+                        Content: Content,
+                    }
+                    
+                    $("#commentBlogPostId").text(commentData.BlogPostId);
+                    $("#commentId").text(commentData.ParentCommentId);
+                    $("#commentName").text(commentData.Name);
+                    $("#commentContent").text(commentData.Content);
+
+                    if (sabio.page.item == null) {
+                        sabio.services.blogComments.insert(commentData, sabio.page.handlers.postSuccess, sabio.page.handlers.postError);
+                    } else {
+                        var Id = sabio.page.item;
+                        sabio.services.blogComments.update(Id, commentData, sabio.page.handlers.updateSuccess, sabio.page.handlers.updateError);
+                    }
+                }else{
+                    alert("not valid");
+                }
+            }
+
+            sabio.page.handlers.postSuccess = function (data) {
+                //sabio.page.item = data.item;
+                sabio.page.postSuccess(data.item);
+            }
+
+            sabio.page.postSuccess = function(dId){
+                sabio.page.item=dId;
+                sabio.services.consumer.notifications.success("Successfully Created!");
+            }
+
+            sabio.page.handlers.postError = function () {
+                sabio.page.postError();
+            }
+
+            sabio.page.postError = function(){
+                sabio.services.consumer.notifications.error("Submission Error!");
+            }
+
+            sabio.page.handlers.formPopulate = function () {
+                sabio.page.formPopulate();
+            }
+
+            sabio.page.formPopulate=function(){
+                sabio.services.blogComments.getById(sabio.page.item, sabio.page.handlers.populateSuccess, sabio.page.handlers.populateError);
+            }
+
+            sabio.page.handlers.populateSuccess = function (data) {
+                sabio.page.populateSuccess(data);
+            }
+
+            sabio.page.populateSuccess = function(data){
+                var eBlogPostId= data.item.blogPostId;
+                if (data.item.parentCommentId == 0){
+                    var eParentCommentId = "";
+                } else{
+                    var eParentCommentId = data.item.parentCommentId;
+                }
+                var eName= data.item.name;
+                var eContent= data.item.content;
+
+                $("#BlogPostId").val(eBlogPostId);
+                $("#ParentCommentId").val(eParentCommentId);
+                $("#Name").val(eName);
+                $("#Content").val(eContent);
+
+                sabio.page.capturedData = {
+                    bp:eBlogPostId,
+                    pc:eParentCommentId,
+                    n:eName,
+                    c:eContent
+                }
+
+            }
+
+            sabio.page.populateAgain = function(){
+                var formFill=sabio.page.capturedData;
+
+                $("#BlogPostId").val(formFill.bp);
+                $("#ParentCommentId").val(formFill.pc);
+                $("#Name").val(formFill.n);
+                $("#Content").val(formFill.c);
+            }
+
+            sabio.page.handlers.fillForm = function(){
+                sabio.page.populateAgain();
+            }
+
+            sabio.page.handlers.populateError = function () {
+                sabio.page.populateError();
+            }
+
+            sabio.page.populateError = function(){
+                sabio.services.consumer.notifications.error("Editing Error!");
+            }
+
+            sabio.page.handlers.updateSuccess = function (data) {
+                sabio.services.consumer.notifications.success("Successfully Updated!");
+                //sabio.page.clearForm("#comment-form");
+            }
+
+            sabio.page.handlers.updateError = function () {
+                sabio.page.updateError();
+            }
+
+            sabio.page.updateError = function (){
+                sabio.services.consumer.notifications.error("Updating Error!");
+            }
+
+            sabio.page.handlers.resetForm = function(){
+                sabio.page.clearForm("#comment-form");
+                sabio.page.item=null;
+            }
+
+            sabio.page.clearForm = function (form) {
+                $(form)[0].reset();
+            }
+
+        </script>
+    }
+
+
