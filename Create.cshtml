@@ -1,535 +1,274 @@
-﻿@using Sabio.Web.Models.ViewModels;
-@model ItemViewModel<int>
+﻿
 @{
     ViewBag.Title = "Create";
-    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    Layout = "~/Views/Shared/_LayoutConsumer.cshtml";
 }
-
 
 @section styles {
     <style type="text/css">
-        #img {
-            height: 200px;
-            width: auto;
-            object-fit: cover;
+        /* page styles */
+        .center-div {
+            margin: 0 auto;
+            width: 50%;
         }
 
-        .bottomSpace {
-            padding-bottom: 40px;
-        }
-
-        .dataLabels {
-            padding-top: 10px;
-        }
-        .displayName {
-            padding-top: 10px;
-        }
+        /*.btn {
+            color: green;
+        }*/
     </style>
 }
 
-<div class="container" ng-controller="categoriesController as main">
-    <div class="row wrapper border-bottom white-bg page-heading">
-        <div class="col-sm-4">
-            <h2>Product Categories</h2>
-        </div>
-        <div class="col-sm-8">
+<div class="row wrapper border-bottom white-bg page-heading text-center">
+    <div class="col-sm-4">
+        <h3>Product Categoty Search</h3>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="active">
+                <strong>Breadcrumb</strong>
+            </li>
+        </ol> <br />
+    </div>
+    @*<div class="col-sm-8">  FIGURE OUT WHAT TO DO WITH THIS.
             <div class="title-action">
-                <a href="" ng-click="main.openCreateModal()" class="btn btn-primary">Create New Product</a>
+                <a href="" class="btn btn-primary">Do Something</a>
             </div>
-        </div>
-    </div>
+        </div>*@
+</div>
 
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="col-md-6 col-md-offset-3">
+                <div class="col-md-12">
+                    <h5 class="montserrat text-uppercase bottom-line">Category Keyword Search</h5>
+                    <div ng-controller="MainController as main">
+                        <!--NG_REPEAT-->
+                        <div class="container" ng-repeat="categoryId in main.items">
+                                <div classs="col-sx-2">
+                                    <div class="ibox-content center-block bigger-font">
+                                        <div>Category Id: <span class="CategoryId">{{categoryId.categoryId}}</span></div>
+                                        <div>Date Created: <span class="dateCreated">{{categoryId.dateCreated}}</span></div>
+                                        <div>Date Modified: <span class="dateModified">{{categoryId.dateModified}}</span></div>
+                                        <div>Id: <span class="id">{{categoryId.id}}</span></div>
+                                        <div>Keyword: <span class="Keyword">{{categoryId.keyword}}</span></div><br />
 
-    <!--PAGER-->
-    <div class="col-lg-6 col-lg-offset-3 text-center">
-        <ul uib-pagination
-            @*boundary-link-numbers="true"*@
-            boundary-links="true"
-            max-size="5"
-            total-items="main.totalCount"
-            items-per-page="main.pageSize"
-            ng-model="main.currentPage"
-            ng-change="main.onPageChange(main.currentPage - 1, main.pageSize)"></ul>
-    </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                        <div class="col-md-6">
+                            <form id="getByCategoryIdForm" name="main.getByCategoryIdForm" ng-submit="main.getByCategoryId(categoryId)" novalidate>
+                                <div class="form-group">
+                                    <label>Enter a Category Id to search</label>
+                                    <input type="text" class="form-control" ng-class="{'error' : main.showGetCategoryErrors && !main.getByCategoryIdForm.newCategoryId.$valid}"
+                                           name="newCategoryId"
+                                           ng-model="main.newIdSearch.newCategoryId" required>
+                                    <div role="alert" classs="help-inline-error">
+                                        <span class="error" ng-show="main.showGetCategoryErrors && main.getByCategoryIdForm.newCategoryId.$error.required">Enter a Category Id</span>
+                                    </div>
+                                </div>
+                                <button type="submit" id="addIdSearch" class="btn btn-success">Search</button>
+                            </form>
+                        </div>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-lg-4" ng-repeat="product in main.productData">
-                <div class="widget-head-color-box navy-bg p-lg text-center">
-                    <img id="img" ng-src="{{product.imageUrl ||  'http://www.gone.vn/wp-content/themes/shopCustom/images/pro-noimage.png'}}">
-                    <h4 class="displayName font-bold no-margins">
-                        {{product.displayName}}
-                    </h4>
-                    <div class="dataLabels">
-                        <label>Created: </label>
-                        <span>{{product.dateCreated | date: 'shortDate'}}</span> |
-                        <label>Changed: </label>
-                        <span>{{product.dateModified | date: 'shortDate'}}</span> <br />
-                        <label>Category Id: </label>
-                        <span>{{product.parentCategoryId}}</span> |
-                        <label>Category Key: </label>
-                        <span>{{product.displayName}}</span>
-                    </div>
+                        <div class="col-md-6 pull-right">
+                            <form id="categoryForm" name="main.categoryForm" ng-submit="main.addRequest()" novalidate>
+                                <div class="form-group">
+                                    <label>Enter a key Word</label>
+                                    <input type="text" class="form-control" ng-class="{'error': main.showCategoryErrorss && !main.categoryForm.keyword.$valid}"
+                                           name="keyword"
+                                           ng-model="main.newSearch.Keyword" required>
+                                    <div role="alert" class="help-inline-error">
+                                        <span class="error" ng-show="main.showCategoryErrors && main.categoryForm.keyword.$error.required">Please enter a Key Word</span>
+                                    </div>
+                                </div>
 
-
-
+                                <div class="form-group">
+                                    <label>Enter a Category Id</label>
+                                    <input type="text" class="form-control" ng-class="{'error': main.showCategoryErrors && !main.categoryForm.categoryId.$valid}"
+                                           name="categoryId"
+                                           ng-model="main.newSearch.CategoryId" required>
+                                    <div role="alert" class="help-inline-error">
+                                        <span class="error" ng-show="main.showCategoryErrors && main.categoryForm.categoryId.$error.required">Please enter a category Id</span>
+                                    </div>
+                                </div>
+                                <button type="submit" id="addSearch" class="btn btn-success">Submit</button>
+                                <button type="button" id="cmdResetSearch" class="btn btn-success" data-ng-click="main.resetForm()">Reset</button>
+                            </form>
+                        </div>
+                    </div><!-- .row -->
                 </div>
-                <div class="widget-text-box">
-                    <a class="btn btn-outline btn-default editProduct" ng-click="main.openCreateModal(product)">Edit</a>
-                    <button type="submit" class="btn btn-outline btn-default" ng-click="main.showKeyWords = !main.showKeyWords">Show Keywords</button>
-                    <button type="button" class="delete-product btn-sm btn-danger pull-right" ng-click="main.onDeleteClick(product.id, $index)">Delete</button>
-                </div>
-            </div>
-            <!--PAGER-->
-            <div class="col-lg-6 col-lg-offset-3 text-center p-b-40">
-                <ul uib-pagination
-                    @*boundary-link-numbers="true"*@
-                    boundary-links="true"
-                    max-size="5"
-                    total-items="main.totalCount"
-                    items-per-page="main.pageSize"
-                    ng-model="main.currentPage"
-                    ng-change="main.onPageChange(main.currentPage - 1, main.pageSize)"></ul>
             </div>
         </div>
     </div>
 </div>
-<div class="bottomSpace"></div>
-
-
-
-
-<script type="text/ng-template" id="modalContent.html">
-    <div class="ibox-content">
-        <form id="productForm" name="mc.productForm" ng-submit="mc.onProductFormSubmit()" novalidate>
-            <div class="form-group">
-                <h2><b>Product Categories Form</b></h2>
-                <label>Display Name</label>
-                <input type="text" class="form-control"
-                       ng-class="{'error': mc.showNewProductFormErrors && mc.productForm.displayName.$invalid}"
-                       name="displayName"
-                       id="displayName"
-                       ng-model="mc.product.displayName"
-                       required>
-                <div role="alert" class="help-inline error">
-                    <span class="error" ng-show="mc.showNewProductFormErrors && mc.productForm.displayName.$error.required">Display Name is required</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Shop Style Category Key</label>
-                <input type="text" class="form-control"
-                       ng-class="{'error': mc.showNewProductFormErrors && mc.productForm.shopStyleCategoryKey.$invalid}"
-                       name="shopStyleCategoryKey"
-                       id="shopStyleCategoryKey"
-                       ng-model="mc.product.shopStyleCategoryKey"
-                       required>
-                <div role="alert" class="help-inline error">
-                    <span class="error" ng-show="mc.showNewProductFormErrors && mc.productForm.shopStyleCategoryKey.$error.required">Shop Style Category Key is required</span>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Category</label>
-                <select class="form-control" ng-model="displayName" ng-options="displayName.id as displayName.displayName for displayName in mc.displayNames">
-                    <option value="">{{mc.product.displayName || mc.default}}</option>
-                </select>
-            </div>
-
-
-            <div class="form-group">
-                <label>Image URL</label>
-                <input type="text" class="form-control"
-                       ng-class="{'error': mc.showNewProductFormErrors && mc.productForm.imageUrl.$invalid}"
-                       name="displayName"
-                       id="displayName"
-                       ng-model="mc.product.imageUrl"
-                       required>
-                <div role="alert" class="help-inline error">
-                    <span class="error" ng-show="mc.showNewProductFormErrors && mc.productForm.imageUrl.$error.required">An Image is Required</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <button type="button" ng-click="mc.onProductFormReset()" class="btn btn-base">Reset</button>
-                <button type="submit" id="addCategory" class="btn btn-base pull-right">Submit</button>
-            </div>
-        </form>
-    </div>
-</script>
 
 
 @section scripts {
 
 
 
-    <script src="~/Scripts/sabio/services/sabio.services.productCategories.js"></script>
 
-    <script>
 
-        sabio.services.editValues = sabio.services.editValues || {};
+    <script src="~/Scripts/sabio/services/Sabio.Services.ProductCategoryKeywords.js"></script>
+
+    <script type="text/javascript">
+
+        sabio.services.dataToChangeService = sabio.services.editById || {};
         (function () {
-            angular.module(APPNAME).factory("editValues", editValues);
+            if (angular) {
+                angular.module(APPNAME).factory("dataToChangeService", dataToChangeService); //should have service at end of name
+                dataToChangeService.$inject = ["$baseService", "$sabio"];
 
-            editValues.$inject = ["$baseService", "$sabio"];
-            function editValues($baseService, $sabio) {
-                var serviceObject = sabio.services.editValues;
-                var service = $baseService.merge(true, {}, serviceObject, $baseService);
-                @if (Model != null) {
-                    <text>
-                service.productId = @Model.Item;
-                </text>
+                function dataToChangeService($baseService, $sabio) {
+                    var serviceObject = sabio.services.dataToChangeService;
+                    var service = $baseService.merge(true, {}, serviceObject, $baseService);
+                    @if (Model != null)
+                    {
+                        <text>
+                    service.currentId = @Model.Item;
+                    </text>
+                    } else
+                    {
+                        <text>
+                    service.currentId = null;
+                    </text>
+                    }
+
+                    return service;
                 }
-                else
-                {
-                    <text>
-                service.productId = null;
-                </text>
-                }
-                return service;
             }
         })();
-
     </script>
 
     <script type="text/javascript">
-        (function () {
-            "use strict";
-
-            angular.module(APPNAME)
-                .controller('categoriesController', CategoriesController);
-
-            CategoriesController.$inject = ['$scope', '$baseController', 'productCategories', 'adminNotifications', 'editValues', '$uibModal'];
-
-            function CategoriesController(
-              $scope
-              , $baseController
-              , productCategories
-              , adminNotifications
-              , editValues
-              ,$uibModal) {
-
-                var vm = this;
-
-                $baseController.merge(vm, $baseController);
-
-                vm.$scope = $scope;
-
-                //services
-                vm.productCategories = productCategories;
-                vm.notify = vm.productCategories.getNotifier($scope);
-                vm.adminNotifications = adminNotifications;
-                vm.editValues = editValues;
-                vm.uibModal = $uibModal;
-
-                //pagination vars
-                vm.currentPage = 0;
-                vm.pageSize = 6;
-
-
-                //variables
-                vm.showNewProductFormErrors = false;
-                vm.submitButton = "Submit";
-                vm.resetButton = "New Product";
-                vm.productId = vm.editValues.productId;
-                vm.data = {};
-
-                vm.savedProduct = null;
-                vm.thisProductId = null;
-                vm.thisProductIndex = null;
-                vm.showMe = true;
-                vm.selectedId = true;
-                vm.showKeyWords = false;
-                vm.savedCategories = null;
-
-
-                //functions
-                vm.onDeleteClick = _onDeleteClick;
-                vm.getPageByIndex = _getPageByIndex;
-                vm.onPageChange = _onPageChange;
-
-
-                //modal directives
-                vm.modalSelected = null;
-                vm.openCreateModal = _openCreateModal
-
-
-
-                //like startUp
-                render();
-
-                function _openCreateModal(theProduct) {
-
-                    var modalInstance = $uibModal.open({
-                        animation: true,
-                        templateUrl: 'modalContent.html',
-                        controller: 'createModalController as mc',
-                        size: 'md',
-                        resolve: {
-
-                            displayNames: function() {
-                                return vm.savedCategories;
-                            },
-                            product: function() {
-                                return theProduct;
-                            }
-                        }
-                    });
-
-                    modalInstance.result
-                    .then(
-                        function(selectedItem){
-
-                            var id = selectedItem.id;
-                            if (id != null)  {
-                                vm.modalSelected = selectedItem
-                            } else {
-                                vm.productData.unshift(selectedItem);
-                            }
-                        }, function() {
-                            console.log('modal dismissed at: ' + new Date());
-                        });
-                }
-
-                function render() {
-                    vm.getPageByIndex(vm.currentPage, vm.pageSize);
-                    vm.productCategories.GetCategoriesByDisplayName(_onGetCategoriesSuccess, _onGetByPageIndexAdminError);
-                }
-
-                function _getPageByIndex(pageIndex, itemsPerPage) {
-                    vm.productCategories.getByPageIndex(pageIndex, itemsPerPage, _onGetByPageIndexAdminSuccess, _onGetByPageIndexAdminError);
-
-                }
-
-                function _onGetCategoriesSuccess(data) {
-                    vm.notify(function () {
-                        vm.$log.debug(data.item);
-                        vm.savedCategories = data.items;
-                    });
-                }
-
-                function _onGetByPageIndexAdminSuccess(data) {
-
-                    vm.notify(function () {
-                        vm.$log.debug(data.item);
-                        vm.productData = data.item.pagedItems;
-                        vm.totalCount = data.item.totalCount;
-                        vm.pageSize = data.item.pageSize;
-                        vm.currentPage = data.item.pageIndex + 1;
-                    });
-                }
-
-                function  _onGetByPageIndexAdminError(){
-                    vm.adminNotifications.error("Failed to get product categories", "Error");
-                }
-
-                function _onProductGetByIdError() {
-                    vm.adminNotifications.error("Failed to retrieve information");
-                }
-
-                function _onPageChange(pageIndex, itemsPerPage) {
-                    vm.getPageByIndex(pageIndex, itemsPerPage);
-                }
-
-                //function _onProductGetByIdSuccess(data){
-                //    vm.notify(function(){
-                //        vm.showMe = false;
-                //        vm.$log.debug(data);
-                //        vm.submitButton = "Update";
-                //        vm.resetButton = "Reset";
-
-                //        vm.data = data.item;
-
-                //        vm.data.displayName = data.item.displayName;
-                //        vm.data.shopStyleCategoryKey = data.item.shopStyleCategoryKey;
-                //        vm.data.parentCategoryId = data.item.parentCategoryId;
-
-                //        vm.savedProduct = {
-                //            displayName: data.item.displayName,
-                //            shopStyleCategoryKey: data.item.shopStyleCategoryKey,
-                //            parentCategoryId: data.item.parentCategoryId,
-
-                //        };
-                //    });
-                //}
-
-
-                //delete thing\\
-                function _onDeleteClick(id, index) {
-                    vm.thisProductId = id;
-                    vm.thisProductIndex = index;
-                    vm.adminNotifications.prompt("Are you sure you want to delete this?", _onOkCallBack);
-                }
-
-                function _onDeleteError() {
-                    vm.adminNotifications.error("Failed to delete", "Error");
-                }
-
-                function _onDeleteSuccess() {
-                    vm.notify(function() {
-                        vm.productData.splice(vm.thisProductIndex, 1);
-                        vm.adminNotifications.success("Deleted", "Success");
-                    });
-                }
-
-                function _onOkCallBack() {
-                    vm.productCategories.delete(vm.thisProductId, _onDeleteSuccess, _onDeleteError);
-                }
-
-                //function _onShowForm(){
-                //    vm.showMe = false;
-                //    vm.productId = null;
-                //    vm.showNewProductFormErrors = false;
-                //    vm.submitButton = "Submit";
-                //    vm.data.displayName = "";
-                //    vm.data.shopStyleCategoryKey = "";
-                //    vm.data.parentCategoryId = "";
-                //}
-            }
-        })();
-
 
         (function () {
             "use strict";
 
-            angular.module(APPNAME)
-                .controller('createModalController', ModalController);
+            angular
+                .module(APPNAME)
+                .controller('MainController', MainController);
 
-            ModalController.$inject = ['$scope', '$baseController', '$uibModalInstance', 'product', 'displayNames', 'productCategories', 'adminNotifications']
+            MainController.$inject = ['$scope', '$baseController', 'productCategoryKeywordsServices', 'dataToChangeService'];
 
-            function ModalController(
+            function MainController(
                 $scope
                 , $baseController
-                , $uibModalInstance
-                , product
-                , displayNames
-                , productCategories
-                ,adminNotifications) {
+                , productCategoryKeywordsServices
+                , dataToChangeService) {
 
                 var vm = this;
 
-                $baseController.merge(vm, $baseController);
-                vm.product = product;
-                vm.displayNames = displayNames;
+                vm.items = null;
+                vm.categoryForm = null;
+                vm.getByCategoryIdForm = null;
+                vm.newSearch = null;
+                vm.newIdSearch = null;
+                vm.showCategoryErrors = false;
+                vm.showGetCategoryErrors = false;
+                vm.currentId = null;
+                vm.updatedForm = null;
+                vm.newPost = null;
+                vm.newForm = [];
+                vm.addToForm = [];
+
+                vm.productCategoryKeywordsServices = productCategoryKeywordsServices;
                 vm.$scope = $scope;
-                vm.$uibModalInstance = $uibModalInstance;
+                vm.receiveItems = _receiveItems;
+                vm.receiveEditById = _receiveEditById;
+                vm.onFormError = _onFormError;
+                vm.addRequest = _addRequest;
+                vm.editForm = _editForm;
+                vm.resetForm = _resetForm;
+                vm.addId = _addId;
+                vm.getByCategoryId = _getByCategoryId
 
-                vm.productCategories = productCategories;
-                vm.notify = vm.productCategories.getNotifier($scope);
-                vm.adminNotifications = adminNotifications;
 
+                $baseController.merge(vm, $baseController);
 
+                vm.notify = vm.productCategoryKeywordsServices.getNotifier($scope);
 
-                //new stuff
-                vm.onProductFormSubmit = _onProductFormSubmit;
-                vm.onProductFormReset = _onProductFormReset;
-                //vm.newPost = _newPost;
+                //render();
 
-                //variables
-                vm.showNewProductFormErrors = false;
-                vm.submitButton = "Submit";
-                vm.resetButton = "New Product";
-                vm.productId = null
-                vm.data = null;
-                vm.default = "Pick a Category";
-                vm.savedProduct = null;
-                vm.thisProductId = null;
-                vm.thisProductIndex = null;
-                vm.showMe = true;
-                vm.selectedId = true;
-                vm.showKeyWords = false;
+                function _getByCategoryId() {
+                    vm.showGetCategoryErrors = true;
+                    vm.currentId = vm.newIdSearch.newCategoryId;
+                    vm.productCategoryKeywordsServices.getKeywordsByCategoryId(vm.currentId, vm.receiveEditById, vm.onFormError);
+                }
 
-                function _onProductFormSubmit() {
-                    vm.showNewProductFormErrors = true;
+                //process the getById\\
+                function _receiveEditById(data) {
+                    vm.notify(function () {
+                        vm.items = data.items;
+                        console.log(vm.items)
+                    });
+                }
 
-                    if (vm.productForm.$valid) {
-                        if (vm.product.id == null) {
-                            vm.productCategories.insert(vm.product, _onProductInsertSuccess, _onProductInsertError);
-                            $uibModalInstance.close(vm.product);
+                function _receiveItems(data) {
+                    vm.currentId = data.item;
+                }
+
+                //post function\\
+                function _addRequest() {
+                    vm.showCategoryErrors = true;
+
+                    if (vm.categoryForm.$valid) {
+                        if (vm.currentId != null) {
+                            vm.editForm();
+                        } else {
+                            vm.productCategoryKeywordsServices.insert(vm.newSearch, vm.receiveItems, vm.onFormError);
+                            console.log("data good =>", vm.newSearch);
                         }
-                        else {
-                            vm.productId = vm.product.id
-                            if (product.parentCategoryId == 0) {
-                                product.parentCategoryId = null;
-                            }
-                            vm.savedProduct = {
-                                id: vm.product.id,
-                                displayName: vm.product.displayName,
-                                shopStyleCategoryKey: vm.product.shopStyleCategoryKey,
-                                parentCategoryId: vm.product.parentCategoryId,
-                            }
-                            vm.productCategories.update(vm.productId, vm.savedProduct, _onProductUpdateSuccess, _onProductUpdateError);
-                            $uibModalInstance.close(vm.product);
-
-                        }
-                    } else {
-                        vm.adminNotifications.error("Did you fill out the fields?");
                     }
                 }
 
+                //update page work\\
+                //add the Id to the newSearch object\\
+                function _addId() {
 
-                function _onProductInsertSuccess(data) {
-                    vm.notify(function () { //Notify is only used if we make changes to the HTML the html template in response to an AJAX
-
-                        vm.adminNotifications.success("Successfully created");
-                        $uibModalInstance.close();
-                    });
-                }
-
-                function _onProductUpdateError() {
-                    vm.adminNotifications.error("Failed to update");
-                }
-
-                function _onProductUpdateSuccess(data) {
-                    vm.notify(function() {
-
-                        vm.adminNotifications.success("Successfully updated!");
-                        $uibModalInstance.close();
-                    });
-                }
-
-                function _onCompleteReset(){
-                    vm.notify(function (){
-                        vm.productId = null;
-                        vm.showNewProductFormErrors = false;
-                        vm.submitButton = "Submit";
-                        vm.product.displayName = "";
-                        vm.product.shopStyleCategoryKey = "";
-                        vm.product.parentCategoryId = "";
-                    });
+                    vm.newSearch.Id = vm.currentId;
+                    vm.newPost = vm.newSearch;
+                    console.log(vm.newPost);
 
                 }
 
+                function _editForm() {
 
-                function _onProductFormReset() {
-                    if (vm.editMode == "active") {
-                        vm.showNewProductFormErrors = false;
-                        vm.data.displayName = vm.savedProduct.displayName;
-                        vm.data.shopStyleCategoryKey = vm.savedProduct.shopStyleCategoryKey;
-                        vm.data.parentCategoryId = vm.savedProduct.parentCategoryId;
-                    }else {
-                        vm.adminNotifications.prompt("Are you sure you want to make a new Product Category?", _onCompleteReset);
+                    vm.addId();
+
+                    if (vm.categoryForm.$valid) {
+
+                        vm.productCategoryKeywordsServices.update(vm.currentId, vm.newPost, vm.receiveItems, vm.onFormError);
+                    }
+                    else {
+                        console.log("Data did not update");
                     }
                 }
 
-                function _onProductInsertError() {
-                    vm.adminNotifications.error("Failed to create");
+                //Reset form\\
+                function _resetForm() {
+                    vm.newSearch = null;
+                    vm.showCategoryErrors = false;
+                    vm.showGetCategoryErrors = false;
+                    vm.currentId = null;
+                    vm.updatedForm = null;
+                    vm.newPost = null;
+                    vm.categoryForm.$setPristine();
+                    vm.categoryForm.$setUntouched();
                 }
 
+                function _onFormError(jqXhr, error) {
+                    console.log(error);
+                }
 
-                vm.ok = function () {
-                    vm.$uibModalInstance.close();
-                };
-
-                vm.cancel = function () {
-                    vm.$uibModalInstance.dismiss('cancel');
-                };
             }
         })();
-
     </script>
-
 }
-
-
-
 

@@ -1,0 +1,235 @@
+﻿
+@{
+    ViewBag.Title = "index";
+    Layout = "~/Views/Shared/_LayoutConsumer.cshtml";
+}
+
+@section styles {
+    <style type="text/css">
+    </style>
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-sm-4">
+        <h2>Contact Us!</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="active">
+                <strong>Breadcrumb</strong>
+            </li>
+        </ol>
+    </div>
+
+    <div class="wrapper wrapper-content">
+        <div class="row animated fadeInRight">
+            <div class="col-md-2">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5>Profile Detail</h5>
+                    </div>
+                    <div>
+                        <div class="ibox-content no-padding border-left-right">
+                            <img alt="image" class="img-responsive" src="http://www.511tactical.com/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/74411/116/74411_116_01.jpg">
+                        </div>
+                        <div class="ibox-content profile-content">
+                            <h4><strong>Monica Smith</strong></h4>
+                            <p><i class="fa fa-map-marker"></i> Riviera State 32/106</p>
+                            <h5>
+                                About me
+                            </h5>
+                            <p>
+                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitat.
+                            </p>
+                            <div class="row m-t-lg">
+                                <div class="col-md-4">
+                                    <span class="bar">5,3,9,6,5,9,7,3,5,2</span>
+                                    <h5><strong>169</strong> Posts</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="line">5,3,9,6,5,9,7,3,5,2</span>
+                                    <h5><strong>28</strong> Following</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="bar">5,3,2,-1,-3,-2,2,3,5,2</span>
+                                    <h5><strong>240</strong> Followers</h5>
+                                </div>
+                            </div>
+                            <div class="user-button">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-primary btn-sm btn-block"><i class="fa fa-envelope"></i> Send Message</button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <button type="button" class="btn btn-default btn-sm btn-block"><i class="fa fa-coffee"></i> Buy a coffee</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+
+
+
+
+
+
+
+            <div>
+                <br />
+                <br />
+
+            </div>
+
+
+
+
+
+
+
+            @section scripts {
+
+
+                <script type="text/ng-template" id="modalContent.html">
+                    <div class="container-fluid">
+                        <div class="row">
+
+                            <div class="col-md-12">
+                                <div class="col-md-6 col-md-offset-3">
+                                    <div class="col-md-12">
+                                        <h5 class="montserrat text-uppercase bottom-line">Category Keyword Search</h5>
+                                        <div ng-controller="MainController as main">
+
+                                            <div class="col-md-6">
+                                                <form id="getByCategoryIdForm" name="main.getByCategoryIdForm" ng-submit="main.getByCategoryId(categoryId)" novalidate>
+                                                    <div class="form-group">
+                                                        <label>Enter a Category Id to search</label>
+                                                        <input type="text" class="form-control" ng-class="{'error' : main.showGetCategoryErrors && !main.getByCategoryIdForm.newCategoryId.$valid}"
+                                                               name="newCategoryId"
+                                                               ng-model="main.newIdSearch.newCategoryId" required>
+                                                        <div role="alert" classs="help-inline-error">
+                                                            <span class="error" ng-show="main.showGetCategoryErrors && main.getByCategoryIdForm.newCategoryId.$error.required">Enter a Category Id</span>
+                                                        </div>
+                                                    </div>
+                                                    <button type="submit" id="addIdSearch" class="btn btn-success">Search</button><br />
+                                                    <div>
+
+                                                        <input ng-model="main.tags">
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </script>
+
+                <script src="~/Scripts/sabio/services/Sabio.Services.ProductCategoryKeywords.js"></script>
+                <script type="text/javascript">
+                    (function () {
+                        "use strict";
+
+                        angular.module(APPNAME)
+                            .controller("pageController", PageController);
+
+                        PageController.$inject = ['$scope', '$baseController', '$uibModal'];
+
+                        function PageController(
+                            $scope
+                            , $baseController
+                            , $uibModal) {
+
+                            var vm = this;
+
+                            $baseController.merge(vm, $baseController);
+
+                            vm.$scope = $scope;
+                            vm.uibModal = $uibModal;
+
+                            // modal directive
+                            vm.modalSelected = null;
+                            vm.modalItems = ['item1', 'item2', 'item3'];
+
+
+                            vm.openModal = _openModal;
+
+                            vm.tags = [
+                                { text: 'Tag1' },
+                                { text: 'Tag2' },
+                                { text: 'Tag3' }
+                            ];
+
+                            function _openModal() {
+                                var modalInstance = $uibModal.open({
+                                    animation: true,
+                                    templateUrl: 'modalContent.html',
+                                    controller: 'modalController as mc',
+                                    size: 'lg',
+                                    resolve: {
+                                        items: function () {
+                                            return vm.modalItems;
+                                        }
+                                    }
+                                });
+
+                                modalInstance.result.then(function (selectedItem) {
+                                    vm.modalSelected = selectedItem;
+                                }, function () {
+                                    console.log('Modal dismissed at: ' + new Date());
+                                });
+                            }
+                        }
+                    })();
+
+                    (function () {
+                        "use strict";
+
+                        angular.module(APPNAME)
+                            .controller('modalController', ModalController);
+
+                        ModalController.$inject = ['$scope', '$baseController', '$uibModalInstance', 'items']
+
+                        function ModalController(
+                            $scope
+                            , $baseController
+                            , $iubModalInstance
+                            , items
+                            ) {
+
+                            var vm = this;
+
+                            $baseController.merge(vm, $baseController);
+
+                            vm.$scope = $scope;
+                            vm.$uibModalInstance = $iubModalInstance;
+
+                            vm.modalItems = items;
+                            vm.selected = {
+                                item: vm.modalItems[0]
+                            };
+
+                            vm.ok = function () {
+                                vm.$uibModalInstance.close(vm.selected.item);
+                            };
+
+                            vm.cancel = function () {
+                                vm.$uibModalInstance.dismiss('cancel');
+                            }
+
+                        }
+                    })();
+
+
+
+
+                </script>
+            }
