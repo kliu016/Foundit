@@ -1,0 +1,261 @@
+﻿@{
+    Layout = "../Shared/_LayoutAdmin.cshtml";
+}
+
+@section styles {
+    <style type="text/css">
+        .blog-post {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        .image-border {
+            padding: 0px;
+        }
+        .blog-image {
+            height: 250px;
+            width: 100%;
+            object-fit: cover;
+        }
+        .blog-title {
+            color: black;
+            height: 28px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 15px;
+            font-weight: 400;
+        }
+        .date-name {
+            height: 15px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 15px;
+        }
+        .blog-content-truncate {
+            height: 55px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            margin-bottom: 15px;
+        }
+        .deleted {
+            opacity: 0.4;
+        }
+        .top-button {
+            margin-bottom: 20px;
+        }
+    </style>
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-sm-4">
+        <h2>Blog Posts</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="active">
+                <strong>Blog Posts</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-sm-8">
+        <div class="title-action">
+            <a href="/admin/blogs/create" class="btn btn-primary">Create new blog post</a>
+        </div>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content clearfix container" ng-controller="BlogsIndexController as blogsIndex">
+    <div class="animated fadeInRightBig">
+        <h3 class="font-bold">Blog Posts</h3>
+
+        <!--PAGER-->
+        <div class="col-lg-6 col-lg-offset-3 text-center">
+            <ul uib-pagination
+                boundary-links="true"
+                max-size="10"
+                total-items="blogsIndex.totalCount"
+                items-per-page="blogsIndex.pageSize"
+                ng-model="blogsIndex.currentPage"
+                ng-change="blogsIndex.onPageChange(blogsIndex.currentPage - 1, blogsIndex.pageSize)"></ul>
+        </div>
+        <!--PAGER-->
+        <!--BLOG TEMPLATE-->
+        <div id="blogs-top" class="row">
+            <div class="col-lg-4 blog-post" ng-repeat="blog in blogsIndex.blogPostsArray" ng-class="{'deleted': blog.isDeleted}">
+                <div class="widget-head-color-box navy-bg p-lg text-center image-border">
+                    <img ng-src="{{blog.imageUrl}}" class="blog-image" alt="Image Unavailable">
+                </div>
+                <div class="widget-text-box">
+                    <h2 class="media-heading blog-title">{{blog.title}}</h2>
+                    <h4 class="media-heading date-name">{{blog.date | date : 'longDate'}} / {{blog.name}}</h4>
+                    <p class="blog-content-truncate" ng-bind-html="blog.blogContent"></p>
+                    <span><a class="read-link" href="/blogs/#/{{blogsIndex.getBlogUrl(blog)}}">Read more ›</a></span>
+                    <br />
+                    <br />
+                    <div>
+                        <button type="button" class="delete btn btn-danger pull-right" ng-show="!blog.isDeleted" ng-click="blogsIndex.onDelete(blog)">Delete</button>
+                        <button type="button" class="restore btn btn-success pull-right" ng-show="blog.isDeleted" ng-click="blogsIndex.onRestore(blog)">Restore</button>
+                        <a href="/admin/blogs/{{blog.id}}/edit" class="edit-address btn btn-outline btn-default" ng-disabled="blog.isDeleted">Edit</a>
+                    </div>
+                </div>
+            </div>
+            <!--BLOG TEMPLATE-->
+            <!--PAGER-->
+            <div class="col-lg-6 col-lg-offset-3 text-center">
+                <ul uib-pagination
+                    boundary-links="true"
+                    max-size="10"
+                    total-items="blogsIndex.totalCount"
+                    items-per-page="blogsIndex.pageSize"
+                    ng-model="blogsIndex.currentPage"
+                    ng-change="blogsIndex.onPageChange(blogsIndex.currentPage - 1, blogsIndex.pageSize)"></ul>
+            </div>
+            <!--PAGER-->
+
+            <div class="col-lg-6 col-lg-offset-3 text-center">
+                <button type="button" class="btn btn-sm btn-default top-button" ng-click="blogsIndex.goToTop()">GO TO TOP</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+@section pageInitScripts {
+    <!--Angular Sanitize-->
+    <script type="text/javascript" src="~/Scripts/ng/angular-sanitize.min.js"></script>
+    <script>sabio.moduleOptions.extraModuleDependencies.push("ngSanitize");</script>
+    <!--Angular Moment-->
+    <script type="text/javascript" src="~/inspinia/js/plugins/fullcalendar/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/angular-moment.js"></script>
+    <script>sabio.moduleOptions.extraModuleDependencies.push("angularMoment");</script>
+}
+
+@section scripts {
+    <!--BlogPosts Ajax calls-->
+    <script src="~/Scripts/sabio/services/sabio.services.blogPosts.js"></script>
+    <script type="text/javascript">
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .controller('BlogsIndexController', BlogsIndexController);
+
+            BlogsIndexController.$inject = ['$scope', '$baseController', 'blogPostsService', 'adminNotifications', '$anchorScroll', '$sanitize'];
+
+            function BlogsIndexController(
+              $scope
+              , $baseController
+              , blogPostsService
+              , adminNotifications
+              , $anchorScroll
+              , $sanitize) {
+
+                var vm = this;
+
+                $baseController.merge(vm, $baseController);
+
+                vm.$scope = $scope;
+
+                //Services
+                vm.blogPostsService = blogPostsService;
+                vm.notify = vm.blogPostsService.getNotifier($scope);
+                vm.adminNotifications = adminNotifications;
+                vm.$anchorScroll = $anchorScroll;
+
+                //Variables
+                vm.currentPage = 0;
+                vm.pageSize = 12;
+                vm.isDeleted =
+
+                //Functions
+                vm.getPage = _getPage;
+                vm.onPageChange = _onPageChange;
+                vm.onDelete = _onDelete;
+                vm.onRestore = _onRestore;
+                vm.goToTop = _goToTop;
+                vm.getBlogUrl = _getBlogUrl;
+
+                render();
+                function render() {
+                    vm.$log.log("Angular ready");
+                    vm.getPage(vm.currentPage, vm.pageSize);
+                }
+
+                function _goToTop() {
+                    $anchorScroll();
+                }
+
+                //--------------------GetForAdmin--------------------
+                function _getPage(pageIndex, itemsPerPage) {
+                    vm.blogPostsService.getForAdmin(pageIndex, itemsPerPage, _onGetForAdminSuccess, _onGetForAdminError);
+                }
+
+                function _onGetForAdminSuccess(data) {
+                    vm.notify(function () {;
+                        $sanitize(data.item.pagedItems.blogContent);
+                        vm.blogPostsArray = data.item.pagedItems;
+                        vm.totalCount = data.item.totalCount;
+                        vm.pageSize = data.item.pageSize;
+                        vm.currentPage = data.item.pageIndex + 1;
+                    });
+                }
+
+                function _onGetForAdminError() {
+                    vm.adminNotifications.error("Failed to retrieve blog posts", "Error");
+                }
+
+                function _onPageChange(pageIndex, itemsPerPage) {
+                    vm.getPage(pageIndex, itemsPerPage);
+                }
+                //--------------------GetForAdmin--------------------
+
+                //--------------------DeleteBlogPost--------------------
+                function _onDelete(blog) {
+                    vm.blogPostsService.delete(blog, _onDeleteSuccess, _onDeleteError);
+                }
+
+                function _onDeleteError() {
+                    vm.adminNotifications.error("Failed to delete blog post", "Error");
+                }
+
+                function _onDeleteSuccess(data,blog) {
+                    vm.adminNotifications.success("Post deleted", "Success");
+                    vm.notify(function () {
+                        blog.isDeleted = true;
+                    });
+                }
+                //--------------------DeleteBlogPost--------------------
+
+                //--------------------RestoreBlogPost--------------------
+                function _onRestore(blog) {
+                    vm.blogPostsService.restore(blog, _onRestoreSuccess, _onRestoreError);
+                }
+
+                function _onRestoreError() {
+                    vm.adminNotifications.error("Failed to restore blog post", "Error");
+                }
+
+                function _onRestoreSuccess(data,blog) {
+                    vm.adminNotifications.success("Post restored", "Success");
+                    vm.notify(function () {
+                        blog.isDeleted = false;
+                    });
+                }
+                //--------------------RestoreBlogPost--------------------
+
+                //--------------------DateAndTitleUrl--------------------
+                function _getBlogUrl(blog) {
+                    var blogDate = moment(blog.date).format("YYYY/MM/DD");
+                    var blogTitle = blog.title;
+                    var blogUrl = blogDate + "/" + blogTitle;
+                    return blogUrl;
+                }
+                //--------------------DateAndTitleUrl--------------------
+            }
+        })();
+    </script>
+}

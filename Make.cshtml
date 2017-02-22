@@ -1,0 +1,158 @@
+﻿
+@{
+    ViewBag.Title = "Make";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+
+
+@section styles {
+    <style type="text/css">
+        /* page styles */
+    </style>
+}
+
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-sm-4">
+        <h2>Meta Tags</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="active">
+                <strong>Breadcrumb</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-sm-8">
+        <div class="title-action">
+        </div>
+    </div>
+</div>
+
+<div class="row ng-scope" ng-app="myApp">
+    <div class="col-lg-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Meta Tags</h5>
+                <div class="ibox-tools">
+                    <a class="collapse-link">
+                        <i class="fa fa-chevron-up"></i>
+                    </a>
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-wrench"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li>
+                            <a href="#">Config option 1</a>
+                        </li>
+                        <li>
+                            <a href="#">Config option 2</a>
+                        </li>
+                    </ul>
+                    <a class="close-link">
+                        <i class="fa fa-times"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="ibox-content ng-scope" ng-controller="HeadController as head">
+                <form method="get" class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Name</label>
+                        <meta name="name" content="{{ head.meta.description() }}">
+
+                        <div class="col-sm-10"><input type="text" class="form-control"></div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">Help text</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control"> <span class="help-block m-b-none">A block of help text that breaks onto a new line and may extend beyond one line.</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+@section scripts {
+
+    <script src="~/Scripts/sabio/services/sabio.services.metaTags.js"></script>
+
+    <script type="text/javascript">
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .controller('MainController', MainController);
+
+            MainController.$inject = ['$scope', '$baseController', 'adminNotifications', 'metaTags'];
+
+            function MainController(
+                $scope
+              , $baseController
+              , adminNotifications
+              , metaTags) {
+
+                var vm = this;
+
+                $baseController.merge(vm, $baseController);
+
+                vm.$scope = $scope;
+
+                //services
+                vm.metaTags = metaTags;
+                vm.notify = vm.metaTags.getNotifier($scope);
+                vm.adminNotifications = adminNotifications;
+
+
+
+
+                //variables
+
+
+                //functions
+
+
+                //like startUp
+                render();
+                function render() {
+                    vm.$log.debug("Angular is ready"); //like console.log
+                    vm.metaTags.get(_onGetTagSuccess, _onGetTagError);
+                }
+
+
+                function _onGetTagSuccess(data) {
+                    vm.notify(function () {
+                        vm.$log.debug(data.items);
+                        vm.tagsData = data.items;
+                    });
+                }
+
+                function _onGetTagError() {
+                    vm.adminNotifications.error("Error");
+                }
+            }
+
+        })();
+    </script>
+}
+
+
+
+
+

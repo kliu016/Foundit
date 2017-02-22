@@ -1,0 +1,256 @@
+﻿
+
+@{
+    //Sabio:
+    ViewBag.Title = "Found!It";
+    Layout = "../Shared/_LayoutAdmin.cshtml";
+}
+
+@section styles {
+    <style type="text/css">
+        /* page styles */
+    </style>
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-sm-4">
+        <h2>Found!t Subscribers</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="/">Home</a>
+            </li>
+           
+        </ol>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content clearfix container" ng-controller="MainController as main">
+    <div class="animated fadeInRightBig">
+        <h2 class="font-bold">Found!t Subscribers</h2>
+
+        <div class="container">
+            <div class="wrapper wrapper-content animated fadeInRight">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="ibox float-e-margins">
+                            <div class="ibox-title">
+                                <div class="ibox-tools">
+                                    <a class="collapse-link">
+                                        <i class="fa fa-chevron-up"></i>
+                                    </a>
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                        <i class="fa fa-wrench"></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-user">
+                                        <li>
+                                            <a href="#">Config option 1</a>
+                                        </li>
+                                        <li>
+                                            <a href="#">Config option 2</a>
+                                        </li>
+                                    </ul>
+                                    <a class="close-link">
+                                        <i class="fa fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="ibox-content">
+
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-hover dataTables-example">
+
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                     <div>#:</div>
+                                                </th>
+
+                                                <th>
+                                                      <div>Email Address:</div>
+                                                </th>
+
+                                                <th>
+                                                     <div>
+                                                         Active Subscriber <br>
+                                                         (uncheck to unsubscribe from Found!t):
+                                                     </div>
+                                                </th>
+
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            <tr ng-repeat="subscriber in main.subscriberData">
+
+                                                <td>
+                                                       <div><span>#: </span>{{subscriber.id}}</div>
+                                                </td>
+
+                                                <td>
+                                                    <div>{{subscriber.emailAddress}}</div>
+                                                </td>
+
+                                                <td>
+                                                    <div>
+                                                        <input class="checkbox-danger"
+                                                               type="checkbox"
+                                                               ng-model="subscriber.isActive"
+                                                               ng-click="main.onClick(subscriber)">
+                                                    </div>
+                                                </td>
+                                                
+                                            </tr>
+
+                                        </tbody>
+                                        <tfoot>
+
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+@section scripts {
+
+    <script src="~/Scripts/sabio/services/sabio.services.blogSubscribers.js"></script>
+    <script src="~/Scripts/sabio/services/admin/sabio.services.admin.notifications.js"></script>
+
+    <script type="text/javascript">
+
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .controller('MainController', MainController);
+
+            MainController.$inject = ['$scope', '$baseController', '$blogSubscriberService', 'adminNotifications'];
+
+            function MainController(
+              $scope
+              , $baseController
+              , $blogSubscriberService
+              , adminNotifications) {
+
+
+                //variables
+                var vm = this;
+                $baseController.merge(vm, $baseController);
+                vm.data = {};
+                vm.clickedId = null;
+                vm.clickedGuidId = null;
+                vm.isActive = null;
+                vm.emailAddress = null;
+                
+
+                //ajax calls
+                vm.$blogSubscriberService = $blogSubscriberService;
+                vm.adminNotifications = adminNotifications;
+                vm.$scope = $scope;
+
+
+                //functions
+                vm.onClick = _onClick;
+                vm.onGetAllSuccess = _onGetAllSuccess;
+                vm.onActivateSuccess = _onActivateSuccess;
+                vm.onDeactivateSuccess = _onDeactivateSuccess;
+                vm.onError = _onError;
+
+                
+                vm.notify = vm.$blogSubscriberService.getNotifier($scope);
+
+
+                render();
+
+                //like the startup function
+                function render() {
+                    $blogSubscriberService.getAll(vm.onGetAllSuccess, vm.onError);
+                }
+
+
+                /*-------------GET ALL---------------*/
+
+                function _onGetAllSuccess(data) {
+                    vm.notify(function () {
+                        vm.subscriberData = data.items;
+                        vm.adminNotifications.success("All Found!t subscribers have been loaded.");
+                    })
+
+                };
+
+
+                /*---------------PUT----------------*/
+
+
+                function _onClick(aSubscriber) {
+
+                    vm.clickedGuidId = aSubscriber.guidId;
+                    vm.clickedId = aSubscriber.id;  
+                    vm.isActive = aSubscriber.isActive;
+                    vm.emailAddress = aSubscriber.emailAddress;
+
+                    if (!vm.isActive) {
+                        vm.adminNotifications.prompt("Are you sure you want to unsubscribe " + vm.emailAddress + "?", _onDeactivateAjaxCall);
+                    } else {
+                        vm.adminNotifications.prompt("Are you sure you want to re-subscribe " + vm.emailAddress + "?", _onActivateAjaxCall);
+                    }
+                };
+ 
+                
+                /*------------DEACTIVATE------------*/
+
+                function _onDeactivateAjaxCall() {
+                    $blogSubscriberService.deactivate(vm.clickedGuidId, vm.data, vm.onDeactivateSuccess, vm.onError);
+                };
+
+
+                function _onDeactivateSuccess(data) {
+
+                    vm.notify(function () {
+                        vm.$log.debug("User is now unsubscribed!", data);
+                        vm.adminNotifications.success(vm.emailAddress + " has been unsubscribed!");
+                    })
+
+                };
+
+
+                /*--------------ACTIVATE--------------*/
+
+                function _onActivateAjaxCall() {
+                    $blogSubscriberService.activate(vm.clickedId, vm.data, vm.onActivateSuccess, vm.onError);
+                };
+
+
+                function _onActivateSuccess(data) {
+
+                    vm.notify(function () {
+                        vm.$log.debug("User in now subscribed!", data);
+                        vm.adminNotifications.success(vm.emailAddress + " has been officially subscribed!")
+                    })
+                };
+
+
+                /*---------------ERROR----------------*/
+
+                function _onError() {
+                    vm.$log.debug("Error!");
+                    vm.adminNotifications.error("An error has occured!");
+                };
+
+                
+
+            }
+        })();
+    </script>
+
+
+}

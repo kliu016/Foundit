@@ -1,0 +1,302 @@
+﻿@model Sabio.Web.Models.ViewModels.ItemViewModel<int>
+
+@{
+    //Sabio:
+    ViewBag.Title = "Found!It";
+    Layout = "../Shared/_LayoutAdmin.cshtml";
+}
+
+@section styles {
+    <style type="text/css">
+        /* page styles */
+    </style>
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div>
+        <h2>Page title</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="active">
+                <strong>Blogs</strong>
+            </li>
+        </ol>
+    </div>
+    <div>
+        <div class="title-action">
+
+        </div>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content container">
+    <div class="animated fadeInRightBig">
+        <h3 class="font-bold">Blogs</h3>
+        <div class="row">
+            <div class="ibox-content">
+                <form class="form-horizontal" id="blog-form">
+                    <p>Add Your Blog</p>
+                    <div id="blogForms" class="form-group">
+                        <label class="col-lg-2 control-label">Title</label>
+                        <div class="col-lg-10">
+                            <input type="text" placeholder="Title" id="blogTitle" name="blogTitle" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">Name</label>
+                        <div class="col-lg-10"><input type="text" placeholder="Name" id="blogName" name="blogName" class="form-control"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">Date</label>
+                        <div class="col-lg-10"><input type="text" placeholder="Date" id="blogDate" name="blogDate" class="form-control"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">Input an Image URL</label>
+                        <div class="col-lg-10"><input type="url" placeholder="ex: http://www.imageurl.com" id="blogImage" name="blogImage" class="form-control"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label">Content</label>
+                        <textarea class="form-control" rows="8" id="blogContent" placeholder="Content" name="blogContent"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-lg-offset-2 col-lg-10">
+                            <button type="button" id="blogFormReset" class="btn btn-sm btn-primary m-t-n-xs"><strong>New Blogs</strong></button>
+                            <button type="button" id="submitNewBlogButton" class="btn btn-sm btn-primary pull-right m-t-n-xs"><strong>Submit</strong></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+@section scripts {  
+<script src="~/Scripts/sabio/services/sabio.services.blogPosts.js"></script>
+    <script>
+        @{
+            if (Model != null)
+            {
+                <text>
+        sabio.page.blogId = @Model.Item;
+        </text>
+            }
+            else
+            {
+                <text>
+        sabio.page.blogId = null;
+        </text>
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        sabio.page.startUp = function () {
+            console.log("JQuery Ready");
+
+            sabio.page.initializeValidation();
+            sabio.page.handlers.prePopulateForm();
+            $("#submitNewBlogButton").on("click", sabio.page.handlers.onSubmitNewBlogButton);
+            $("#blogFormReset").on("click", sabio.page.handlers.onBlogsFormReset);
+
+        };
+
+        sabio.page.editMode = null;
+        sabio.page.blogForm = null;
+
+
+        sabio.page.handlers.onSubmitNewBlogButton = function () {
+            sabio.page.blogButtonSubmit();
+        };
+        sabio.page.handlers.onBlogsFormReset = function () {
+            sabio.page.blogsFormReset();
+        };
+
+        sabio.page.handlers.onBlogsGetByIdError = function () {
+            sabio.page.blogsGetByIdErrorToastr();
+        };
+        sabio.page.handlers.onBlogsGetByIdSuccess = function (data) {
+            sabio.page.blogsGetByIdSuccessToastr(data.item);
+        };
+
+        sabio.page.handlers.onBlogPostError = function () {
+            sabio.page.postBlogErrorToastr();
+        };
+        sabio.page.handlers.onPostBlogSuccess = function (data) {
+            sabio.page.postBlogSuccess(data.item);
+        };
+
+        sabio.page.handlers.onPutBlogSuccess = function () {
+            sabio.page.putBlogSuccessToastr();
+        };
+        sabio.page.handlers.onPutBlogError = function () {
+            sabio.page.putBlogErrorToastr();
+        };
+
+        sabio.page.initializeValidation = function () {
+            jQuery.validator.setDefaults({
+                debug: true
+            });
+
+
+
+            $('#blog-form').validate({
+                rules: {
+                    "blogTitle": {
+                        maxlength: 50,
+                        required: true
+
+                    },
+                    "blogName": {
+                        maxlength: 50,
+                        required: true
+                    },
+                    "blogDate": {
+                        required: true
+                    },
+                    "blogImage": {
+                        required: true
+                    },
+                    "blogContent": {
+                        required: true
+                    }
+                },
+                messages: {
+                    "blogTitle": {
+                        required: "blogTitle is required for the sample",
+                    },
+                    "blogName": {
+                        required: "blogName is required for the sample",
+                    },
+                    "blogDate": {
+                        required: "blogDate is required for the sample",
+                    },
+                    "blogImage": {
+                        required: "Input a Valid URL",
+                    },
+                    "blogContent": {
+                        required: "blogContent is required for the sample"
+                    }
+                }
+            });
+        };
+
+
+        sabio.page.handlers.prePopulateForm = function () {
+            if (sabio.page.blogId != null) {
+                sabio.services.blogPosts.getById(sabio.page.blogId, sabio.page.handlers.onBlogsGetByIdSuccess, sabio.page.handlers.onBlogsGetByIdError);
+            }
+        };
+
+        sabio.page.blogButtonSubmit = function () {
+        sabio.page.blogForm = sabio.page.readBlogForm();
+            if ($('#blog-form').valid()) {
+                //$("#blog-form").get(0).reset();
+
+            }
+            else {
+            }
+
+            if (sabio.page.blogId === null) {
+                sabio.services.blogPosts.insert(sabio.page.blogForm, sabio.page.handlers.onPostBlogSuccess, sabio.page.handlers.onBlogPostError);
+            } else {
+                var postId = sabio.page.blogId;
+                sabio.services.blogPosts.update(postId, sabio.page.blogForm, sabio.page.handlers.onPutBlogSuccess, sabio.page.handlers.onPutBlogError);
+            }
+        };
+
+        sabio.page.blogsFormReset = function () {
+            if (sabio.page.editMode == "active") {
+                sabio.page.writeBlogs(sabio.page.blogForm);
+            } else {
+                sabio.services.admin.notifications.prompt("You will be making a new Blog!", sabio.page.resetSweetAlert);
+            };
+        };
+
+
+        sabio.page.blogsGetByIdErrorToastr = function () {
+            sabio.services.admin.notifications.error("Failed to get Blogs", "Error");
+        };
+
+        sabio.page.blogsGetByIdSuccessToastr = function (data) {
+            sabio.page.blogForm = data;
+            sabio.page.activateEditMode();
+        };
+
+        sabio.page.storeBlogId = function (id) {
+            sabio.page.blogId = id;
+        };
+
+        sabio.page.postBlogSuccess = function (data) {
+            sabio.page.newBlogs(data);
+        };
+
+        sabio.page.postBlogErrorToastr = function () {
+            sabio.services.admin.notifications.error("Failed to create new blogs");
+        };
+
+        sabio.page.putBlogSuccessToastr = function () {
+            sabio.services.admin.notifications.success("Changes Saved", "Success");
+        };
+
+        sabio.page.putBlogErrorToastr = function () {
+            sabio.services.admin.notifications.error("Failed to update", "Error");
+        };
+
+        sabio.page.newBlogs = function (id){
+            sabio.page.blogId = id;
+            sabio.services.admin.notifications.success("Blog Saved", "Success");
+            $("#submitNewBlogButton").text("Edit");
+        };
+
+        sabio.page.activateEditMode = function () {
+            sabio.page.editMode = "active";
+            $("#submitNewBlogButton").text("Edit");
+            $("#blogFormReset").text("Reset");
+            sabio.page.writeBlogs(sabio.page.blogForm);
+            sabio.page.readBlogForm();
+        };
+
+
+        sabio.page.readBlogForm = function () {
+            //read blog Form
+            var bForm = {
+                Id: sabio.page.blogId,
+                //UserId: $("#blogId").val(),
+                Title: $("#blogTitle").val(),
+                Name: $("#blogName").val(),
+                Date: $("#blogDate").val(),
+                ImageUrl: $("#blogImage").val(),
+                BlogContent: $("#blogContent").val()
+            }
+            return bForm;
+        };
+
+
+        sabio.page.writeBlogs = function (form) {
+            $("#blogTitle").val(form.title);
+            $("#blogName").val(form.name);
+            $("#blogDate").val(form.date);
+            $("#blogImage").val(form.imageUrl);
+            $("#blogContent").val(form.blogContent);
+        };
+
+        sabio.page.resetSweetAlert = function () {
+            $("#blog-form").get(0).reset();
+            $("#submitNewBlogButton").text("Submit");
+            sabio.page.blogId = null;
+        };
+
+
+
+    </script>
+
+
+}

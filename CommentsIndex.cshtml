@@ -1,0 +1,149 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+@section styles {
+    <style type="text/css">
+        /* page styles */
+    </style>
+}
+
+<div class="container">
+    <div class="row">
+        <div class="comments">
+        </div>
+    </div>
+</div>
+
+
+
+
+
+@section scripts {
+    <script type="text/html" id="commentTemplate">
+        <div wrapper wrapper-content>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="social-feed-box">
+                        <div class="social-avatar">
+                            <div class="media-body">
+                                <small class="text-muted blogPostId">Today 4:21 pm - 12.06.2014</small>
+                                <br />
+                                <small class="text-muted commentId">Today 4:21 pm - 12.06.2014</small>
+                                <a href="" class="commentName">
+                                    Andrew Williams
+                                </a>
+                                <small class="text-muted parentCommentId">Today 4:21 pm - 12.06.2014</small>
+                                <small class="text-muted commentDateCreated">Today 4:21 pm - 12.06.2014</small>
+                                <small class="text-muted commentDateModified">Today 4:21 pm - 12.06.2014</small>
+                                <small class="text-muted commentUserId">Today 4:21 pm - 12.06.2014</small>
+                            </div>
+                        </div>
+                        <div class="social-body commentContent">
+                            <p>
+                                Many desktop publishing packages and web page editors now use Lorem Ipsum as their
+                                default model text, and a search for 'lorem ipsum' will uncover many web sites still
+                                default model text.
+                            </p>
+                        </div>
+                        <div>
+                            <a href="#" target="_blank" class="btn btn-info edit" role="button"><i class="fa fa-paste"></i>Edit</a>
+                            <button class="btn btn-warning delete" type="button"><i class="fa fa-warning"></i> <span class="bold">Delete</span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+    <script type="text/javascript" src="/Scripts/sabio/services/sabio.services.blogComments.js"></script>
+    <script src="~/Scripts/sabio/services/consumer/sabio.services.consumer.notifications.js"></script>
+    <script type="text/javascript">
+
+        sabio.page.activeDelete = null;
+        sabio.page.activeEdit = null;
+
+        sabio.page.startUp = function () {
+            sabio.page.displayComments();
+        };
+
+        sabio.page.displayComments = function () {
+            sabio.services.blogComments.get(sabio.page.handlers.onSuccess, sabio.page.handlers.onError);
+        }
+
+        sabio.page.handlers.onSuccess = function (data) {
+            var array = data.items;
+          
+            sabio.page.loadComments(array);
+        }
+
+        sabio.page.loadComments = function (arrayData) {
+            var arrayLength = arrayData.length;
+
+            for (var i = 0; i < arrayLength; i++) {
+
+                var array = arrayData[i];
+                var template = $("#commentTemplate").html();
+                var $template = $(template);
+                var Id = array.id;
+                if (array.parentCommentId == 0) {
+                    var ParentCommentId = "";
+                } else {
+                    var ParentCommentId = array.parentCommentId;
+                };
+                var Name = array.name;
+                var Content = array.content;
+                var DateCreated = array.dateCreated;
+                var DateModified = array.dateModified;
+                var UserId = array.userId;
+                var BlogPostId = array.blogPostId;
+
+                $template.find(".blogPostId").text(BlogPostId);
+                $template.find(".commentId").text(Id);
+                $template.find(".parentCommentId").text(ParentCommentId);
+                $template.find(".commentName").text(Name);
+                $template.find(".commentContent").text(Content);
+                $template.find(".commentDateCreated").text(DateCreated);
+                $template.find(".commentDateModified").text(DateModified);
+                $template.find(".commentUserId").text(UserId);
+                $template.find("a[href='#']").attr("href", '/comments/' + Id + '/edit')
+
+                $(".comments").append($template);
+            };
+
+            $(".delete").on("click", sabio.page.handlers.deleteComment);
+        }
+
+        sabio.page.handlers.onError = function () {
+            sabio.services.consumer.notifications.error("Error!");
+        }
+
+        sabio.page.handlers.deleteComment = function () {
+            sabio.page.removeComment(this);
+        }
+
+        sabio.page.removeComment = function (deleteButton) {
+            var id = $(deleteButton).closest(".social-feed-box").find(".commentId").text();//write a new function that receives a parameter that updates the this in the function
+            sabio.services.blogComments.delete(id, sabio.page.handlers.deleteSuccess, sabio.page.handlers.deleteError);
+            sabio.page.activeDelete = deleteButton;
+        }
+
+        sabio.page.handlers.deleteSuccess = function () {
+            sabio.page.deleteSuccess();
+        }
+
+        sabio.page.deleteSuccess = function () {
+            $(sabio.page.activeDelete).closest(".social-feed-box").remove();
+            sabio.services.consumer.notifications.success("Successfully Deleted!");
+        }
+
+        sabio.page.handlers.deleteError = function () {
+            sabio.page.deleteError();
+        }
+
+        sabio.page.deleteError = function () {
+            sabio.services.consumer.notifications.error("Deletion Error!");
+        }
+
+    </script>
+}

@@ -1,0 +1,294 @@
+﻿@model Sabio.Web.Models.ViewModels.ItemViewModel<int>
+
+@{
+    ViewBag.Title = "Found!It";
+    Layout = "../Shared/_LayoutAdmin.cshtml";
+}
+
+@section styles {
+    <style type="text/css">
+       
+    </style>
+}
+
+<div class="row wrapper border-bottom white-bg page-heading">
+    <div class="col-sm-4">
+        <h2>Page title</h2>
+        <ol class="breadcrumb">
+            <li>
+                <a href="index.html">Home</a>
+            </li>
+            <li>
+                <a href="index.html">Admin</a>
+            </li>
+            <li class="active">
+                <strong>Breadcrumb</strong>
+            </li>
+        </ol>
+    </div>
+    <div class="col-sm-8">
+        <div class="title-action">
+            <a href="/admin/blogs" class="btn btn-primary">Blogs</a>
+        </div>
+    </div>
+</div>
+
+<div class="wrapper wrapper-content clearfix container">
+    <div class="animated fadeInRightBig">
+        <div class="row" ng-controller="blogPostController as blog">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="ibox-content">
+                    <h3 class="font-bold">Create Blog Post</h3>
+                    <form role="form" id="blogForm" name="blog.blogForm" ng-submit="blog.submitPost()" novalidate>
+                        <div id="blogForms" class="form-group"  ng-class="{'has-error': blog.showTitleErrors && !blog.blogForm.blogTitle.$valid}">
+                            <label>Title</label>
+                            <input type="text" placeholder="Title" name="blogTitle" ng-model="blog.blogTitle" class="form-control" required ng-maxlength="50">
+                            <div class="help-block" ng-show="blog.showTitleErrors && blog.blogForm.blogTitle.$error.required">Blog title is required</div>
+                            <div class="help-block" ng-show="blog.showTitleErrors && blog.blogForm.blogTitle.$error.maxlength">Blog title cannot be more than 50 characters</div>
+                        </div>
+                        <div class="form-group" ng-class="{'has-error': blog.showNameErrors && !blog.blogForm.blogTitle.$valid}">
+                            <label>Name</label>
+                            <input type="text" placeholder="Name" name="authorName" ng-model="blog.authorName" class="form-control" required ng-maxlength="50">
+                            <div class="help-block" ng-show="blog.showNameErrors && blog.blogForm.authorName.$error.required">Name is required</div>
+                            <div class="help-block" ng-show="blog.showNameErrors && blog.blogForm.authorName.$error.maxlength">Name cannot be more than 50 characters</div>
+                        </div>
+                        <div class="form-group" ng-class="{'has-error': blog.showDateErrors && !blog.blogForm.blogTitle.$valid}">
+                            <label>Publish Date</label>
+                            <input type="date" placeholder="Publish Date" name="date" ng-model="blog.date" class="form-control" required>
+                            <div class="help-block" ng-show="blog.showDateErrors && blog.blogForm.date.$error.required">Publish Date is required</div>
+                        </div>
+                        <div class="form-group" ng-class="{'has-error': blog.showImageErrors && !blog.blogForm.blogTitle.$valid}">
+                            <label>Input an Image URL</label>
+                            <input type="url" placeholder="ex: http://www.imageurl.com" name="blogImage" ng-model="blog.blogImage" class="form-control" required ng-maxlength="1000" />
+                            <div class="help-block" ng-show="blog.showImageErrors && blog.blogForm.blogImage.$error.required">Image is required</div>
+                            <div class="help-block" ng-show="blog.showImageErrors && blog.blogForm.blogImage.$error.maxlength">URL cannot be more than 1000 characters</div>
+                            <div class="help-block" ng-show="blog.showImageErrors && blog.blogForm.blogImage.$error.url">Please enter valid URL</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Content</label>
+                            <textarea ui-tinymce class="form-control ng-class={'error': !blog.blogForm.blogContent.$valid}" rows="8" name="blogContent" placeholder="Content" ng-model="blog.blogContent" ng-required></textarea>
+                            <div class="help-block" ng-show="blog.showContentErrors && blog.blogForm.blogContent.$error.required">Blog content is required</div>
+                        </div>
+                        <div class="form-group" ng-class="{'has-error': blog.showTagErrors && !blog.blogForm.blogTags.$valid}">
+                            <label>Tags</label>
+                            <tags-input name="blogTags" 
+                                        ng-model="blog.blogTags" 
+                                        key-property="text" placeholder="Tags">
+                                <auto-complete source="blog.loadTags($query)"></auto-complete>
+                            </tags-input>
+                            <div class="help-block" ng-show="blog.showTagErrors && blog.blogForm.blogTags.$error.maxlength">Too long!</div>
+                        </div>
+                        <div class="form-group">
+                            <div>
+                                <button class="btn btn-sm btn-primary m-t-n-xs"><strong>{{blog.submitButton}}</strong></button>
+                                <button type="button" id="blogFormReset" class="btn btn-sm btn-primary m-t-n-xs" ng-click="blog.resetForm()"><strong>Reset</strong></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/Scripts/sabio/services/sabio.services.blogPosts.js"></script>
+    <script src="~/Scripts/sabio/services/sabio.services.blogTagsService.js"></script>
+   
+    <script>
+        (function () {
+            "use strict";
+            angular.module(APPNAME).controller("blogPostController", BlogPostController);
+
+            BlogPostController.$inject = ['$scope', '$baseController','$http','blogPostsService', 'foundItBaseModel', 'adminNotifications', 'blogTagsService'];
+
+            function BlogPostController(
+                $scope,
+                $baseController,
+                $http,
+                blogPostsService,
+                foundItBaseModel,
+                adminNotifications,
+                blogTagsService) {
+
+                var vm = this;
+
+                $baseController.merge(vm, $baseController);
+
+                vm.blogPostsService = blogPostsService;
+                vm.foundItBaseModel = foundItBaseModel;
+                vm.adminNotifications = adminNotifications;
+                vm.blogTagsService = blogTagsService;
+                vm.notify = vm.blogPostsService.getNotifier($scope);
+                vm.id = vm.foundItBaseModel.model.item;
+                vm.updatedData = null;
+                vm.submitButton = "Submit";
+
+                vm.submitPost = _submitPost;
+                vm.resetForm = _resetForm;
+                vm.loadTags = _loadTags;
+
+                render();
+
+                function render() {
+                    _showErrors(false);
+                    console.log(vm.id);
+                    if (vm.id != 0) {
+                        vm.blogPostsService.getById(vm.id, _onGetSuccess, _onError);
+                        vm.submitButton = "Update";
+                    }
+                }
+
+                function _showErrors(bool) {
+                    vm.showTitleErrors = bool;
+                    vm.showNameErrors = bool;
+                    vm.showDateErrors = bool;
+                    vm.showImageErrors = bool;
+                    vm.showContentErrors = bool;
+                    vm.showTagErrors = bool;
+                }
+
+                function _submitPost() {
+                    _showErrors(true);
+                    if (vm.blogForm.$valid) {
+                        vm.blogTagNames = [];
+                        if (vm.blogTags) {
+                            for (var i = 0; i< vm.blogTags.length; i++) {
+                                vm.blogTagNames.push(vm.blogTags[i].text);
+                            }
+                        }
+                        var data = {
+                            title: vm.blogTitle,
+                            name: vm.authorName,
+                            publishDate: vm.date.toDateString(),
+                            imageUrl: vm.blogImage,
+                            blogContent: vm.blogContent,
+                            blogTags: vm.blogTagNames
+                        }
+                        if (vm.id == 0) {
+                            vm.blogPostsService.insert(data, _onCreateSuccess, _onError);
+                        } else {
+                            data.id = vm.id;
+                            vm.blogPostsService.update(vm.id, data, _onPutSuccess, _onError);
+                        }
+                    }
+                }
+
+                function _onCreateSuccess(data) {
+                    vm.notify(function () {
+                        _showCreateSuccess(data.item);
+                    });
+                }
+
+                function _showCreateSuccess(id){
+                    vm.id = id;
+                    vm.adminNotifications.success("Blog post created", "Success!");
+                    vm.submitButton = "Update";
+                }
+
+                function _loadTags($query) {
+                    return $http.get("/api/v2/admin/blogs/tags").then(function (response) {
+                        var tags = response.data.items;
+                        var filteredTags = tags.filter(function(tag) {
+                            return tag.name.toLowerCase().indexOf($query.toLowerCase()) != -1;
+                        });
+
+                        return filteredTags.map(_mapCategory);
+                    });
+                }
+
+                function _mapCategory(object){
+                    object.text = object.name;
+                    return object;
+                }
+
+                function _onPutSuccess(data) {
+                    vm.adminNotifications.success("Blog post updated", "Success!");
+
+                    if (vm.updatedData != null) {
+                        vm.updatedData = {
+                            title: vm.blogTitle,
+                            name: vm.authorName,
+                            date: vm.date,
+                            imageUrl: vm.blogImage,
+                            blogContent: vm.blogContent,
+                            blogTags: vm.blogTags
+                        }
+
+
+                        var date = moment(vm.createdate).format("YYYY/MM/DD");
+
+                        vm.blogPostsService.$window.location.href = "/blogs/#/" + date + "/" + vm.blogTitle;
+                    }
+                }
+
+                function _onGetSuccess(data){
+                    vm.notify(function(){
+                        _assignUpdatedData(data.item);
+                    });
+                    vm.createdate = data.item.date;
+                }
+
+                function _assignUpdatedData(data){
+                    vm.updatedData = data;
+                    _displayUpdatedData();
+                }
+
+                function _displayUpdatedData(){
+                    vm.blogTitle = vm.updatedData.title;
+                    vm.authorName = vm.updatedData.name;
+                    vm.date = new Date(vm.updatedData.date);
+                    vm.blogImage = vm.updatedData.imageUrl;
+                    vm.blogContent = vm.updatedData.blogContent;
+
+                    vm.blogTagNames = [];
+                    if (vm.updatedData.tags.length) {
+                        for (var i = 0; i < vm.updatedData.tags.length; i++) {
+                            vm.blogTagNames.push(vm.updatedData.tags[i]);
+                        }
+                    }
+                    console.log("blogtag", vm.blogTagNames);
+                    vm.blogTags = vm.blogTagNames;
+                }
+
+                function _onError() {
+                    vm.notify(function () {
+                        _showAjaxError();
+                    });
+                }
+
+                function _showAjaxError() {
+                    vm.adminNotifications.error("Error");
+                }
+
+                function _resetForm() {
+                    if (vm.updatedData != null) {
+                        _displayUpdatedData();
+                    } else {
+                        vm.blogTitle = "";
+                        vm.authorName = "";
+                        vm.date = "";
+                        vm.blogImage = "";
+                        vm.blogContent = "";
+                        vm.blogTags = "";
+                        _showErrors(false);
+                    }
+                }
+            }
+        })();
+    </script>
+
+}
+
+@section pageInitScripts {
+    <script src="~/Content/ng-tags-input/ng-tags-input.min.js"></script>
+    <script src="~/Content/consumer/tinymce/tinymce.min.js"></script>
+    <script src="~/Content/consumer/tinymce/ui-tinymce.min.js"></script>
+    <script type="text/javascript">
+        sabio.moduleOptions.extraModuleDependencies.push('ngTagsInput', 'ui.tinymce');
+
+    </script>
+    <script type="text/javascript" src="~/inspinia/js/plugins/fullcalendar/moment.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/angular-moment.js"></script>
+    <script>sabio.moduleOptions.extraModuleDependencies.push("angularMoment");</script>
+}
